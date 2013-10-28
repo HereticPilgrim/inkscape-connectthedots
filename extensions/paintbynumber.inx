@@ -7,7 +7,7 @@
 	<_param name="title" type="description">Generates a "Paint by Number picture" from the selected path.</_param>
 	<param name="hide_path" type="boolean" _gui-text="Hide path afterwards">true</param>
 	<effect>
-		<object-type>[all|{element type}]</object-type>
+		<object-type>all</object-type>
 		<effects-menu>
 			<submenu _name="Generate from Path"/>
 		</effects-menu>
