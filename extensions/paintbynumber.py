@@ -35,6 +35,9 @@ class PaintByNumber(inkex.Effect):
 		self.OptionParser.add_option('-r', '--radius', action = 'store',
 									 type = 'string', dest = 'radius', default = 10,
 									 help = 'Radius of the dots at every vertex of the path')
+		self.OptionParser.add_option('-f', '--fontsize', action = 'store',
+									 type = 'string', dest = 'fontsize', default = 10,
+									 help = 'Font size of the numbers')
 
 
 	def effect(self):
@@ -141,6 +144,7 @@ class PaintByNumber(inkex.Effect):
 					number.text = str(idx+1)
 					number.set('x', str(nx))
 					number.set('y', str(ny))
+					number.set('font-size', self.options.fontsize)
 
 					numberLayer.append(number)
 
