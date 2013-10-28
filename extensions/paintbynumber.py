@@ -17,7 +17,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from math import pi
+from random import randint
+from math import pi, acos, sqrt, degrees
 
 import inkex
 import simplepath
@@ -53,11 +54,12 @@ class PaintByNumber(inkex.Effect):
 				d = path.get('d')
 				
 				vertices = simplepath.parsePath(d)
+				r = float(self.options.radius)
+				h = inkex.unittouu(svg.get('height'))
 
 				# iterate over vertices and draw dots on each as well as the number next to it
 				for idx, v in enumerate(vertices):
-					c, (x, y) = v
-
+					x,y = self.getXY(v)
 
 					# create dots
 					style = {
@@ -84,11 +86,74 @@ class PaintByNumber(inkex.Effect):
 					dot = inkex.etree.SubElement(dotLayer, inkex.addNS('path', 'svg'), attributes)
 
 					# draw numbers
-					### TODO
+					token = randint(0,3)
+					if token == 0:
+						# place number left of the dot
+						nx = x-2*r
+						ny = y
+					elif token == 1:
+						# place number above dot
+						nx = x
+						ny = y+2*r
+					elif token == 2:
+						# place number to the right
+						nx = x+2*r
+						ny = y
+					else:
+						# place number below dot
+						nx = x
+						ny = y-2*r
+						
+					## place numbers according in largest available angle of vectors - BUGGY
+					# if idx > 0 and idx < len(vertices)-1:
+						# x1,y1 = self.getXY(vertices[idx-1])
+						# x2,y2 = x,y
+						# x3,y3 = self.getXY(vertices[idx+1])
+
+						# u1,v1 = x2-x1,y2-y1
+						# u2,v2 = x3-x2,y3-y2
+
+						# alpha = degrees(acos((u1*u2 + v1*v2)/(sqrt((u1**2+v1**2)*(u2**2+v2**2)))))
+						# msg = '%i %f' % (idx, alpha)
+						# inkex.errormsg(msg)
+
+						# if alpha >= 0 and alpha <= 45:
+						# 	# place number left of the dot
+						# 	nx = x-3*r
+						# 	ny = y
+						# elif alpha > 45 and alpha <= 180:
+						# 	# place number above dot
+						# 	nx = x
+						# 	ny = y+3*r
+						# elif alpha > 180 and alpha <= 315:
+						# 	# place number to the right
+						# 	nx = x+3*r
+						# 	ny = y
+						# elif alpha > 315:
+						# 	# place number below dot
+						# 	nx = x
+						# 	ny = y-3*r
+					# else:
+						# special case for the first number
+						# nx,ny = 5,5
+
+					number = inkex.etree.Element(inkex.addNS('text', 'svg'))
+					number.text = str(idx+1)
+					number.set('x', str(nx))
+					number.set('y', str(ny))
+
+					numberLayer.append(number)
+
 
 				# hide the original path if specified in options
 				if self.options.hidepath == 'true':
 					path.set('display', 'none')
+
+	
+	def getXY(self, vertex):
+		c, (x, y) = vertex
+		return x,y
+
 
 # create effect instance and apply it.
 if __name__ == '__main__':
