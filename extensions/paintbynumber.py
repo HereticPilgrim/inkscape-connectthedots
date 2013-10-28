@@ -155,7 +155,9 @@ class PaintByNumber(inkex.Effect):
 
 	
 	def getXY(self, vertex):
-		c, (x, y) = vertex
+		inkex.errormsg(repr(vertex))
+		c, l = vertex
+		x,y = l[0], l[1]
 		return x,y
 
 
