@@ -5,7 +5,8 @@
 	<dependency type="executable" location="extensions">paintbynumber.py</dependency>
 	<dependency type="executable" location="extensions">inkex.py</dependency>
 	<_param name="title" type="description">Generates a "Paint by Number picture" from the selected path.</_param>
-	<param name="hide_path" type="boolean" _gui-text="Hide path afterwards">true</param>
+	<param name="radius" type="string" _gui-text="Vertex Radius">5</param>
+	<param name="hidepath" type="boolean" _gui-text="Hide path after completion">true</param>
 	<effect>
 		<object-type>all</object-type>
 		<effects-menu>
