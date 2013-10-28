@@ -4,7 +4,9 @@ inkscape-paintbynumber
 An extension for Inkscape to create a "Paint by Number" picture.
 
 ## What is Paint by Numbers?
+An image where you have numbered dots which you need to connect to reveal the hidden image. It is a fun activity for kids and grown-ups as well.
 
+Currently, Paint by Numbers extension places the numbers at random near the dots. So you may need to adjust the positions of some numbers. I plan on fixing this in the future.
 
 ## Installation
 1. Copy *paintbynumbers.inx* and *paintbynumbers.py* into your share/inkscape/extension folder (may require admin rights.)
