@@ -6,7 +6,7 @@ An extension for Inkscape to create a "Paint by Number" picture.
 ## What is Paint by Numbers?
 An image where you have numbered dots which you need to connect to reveal the hidden image. It is a fun activity for kids and grown-ups as well.
 
-Currently, Paint by Numbers extension places not all the numbers appropriately, so some manual adjustment may be necessary.
+Currently, Paint by Numbers extension places not all the numbers optimally, so some manual adjustment may be necessary.
 
 
 ## Installation

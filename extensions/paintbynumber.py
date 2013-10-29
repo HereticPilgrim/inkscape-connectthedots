@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 '''
 
-from random import randint
+from random import randint, choice
 from math import pi, acos, sqrt, degrees
 
 import inkex
@@ -27,6 +27,10 @@ import gettext
 _ = gettext.gettext
 
 class PaintByNumber(inkex.Effect):
+	TOP_RIGHT = 1
+	TOP_LEFT = 2
+	BOTTOM_LEFT = 3
+	BOTTOM_RIGHT = 4
 	def __init__(self):
 		inkex.Effect.__init__(self)
 		self.OptionParser.add_option('-p', '--hidepath', action = 'store',
@@ -52,6 +56,7 @@ class PaintByNumber(inkex.Effect):
 		numberLayer.set(inkex.addNS('label', 'inkscape'), 'PaintByNumber numberLayer')
 		numberLayer.set(inkex.addNS('groupmode', 'inkscape'), 'layer')
 
+		# iterate over every path, start numbering from 1 every time
 		for id, path in self.selected.iteritems():
 			if path.tag == 'path' or path.tag == inkex.addNS('path','svg'):
 				# radius and fontsize as offsets to avoid placing numbers inside dots
@@ -85,31 +90,27 @@ class PaintByNumber(inkex.Effect):
 					}
 					dot = inkex.etree.SubElement(dotLayer, inkex.addNS('path', 'svg'), attributes)
 
-					# place numbers according to where the next node lies
 					if idx > 0 and idx < len(vertices)-1:
-						x1,y1 = self.getXY(vertices[idx-1])
-						x2,y2 = x,y
-						x3,y3 = self.getXY(vertices[idx+1])
-
-						# vector from first to second point
-						u1,v1 = x2-x1,y2-y1
-						u2,v2 = x3-x1,y3-y1
-						
-						# check if point is to the left or to the right
-						k = (u1*v2)-(v1*u2)
-
-						if k > 0:
-							# point is to the left, place above second node
-							nx = x
-							ny = y-r-0.5*f
-						else:
-							# point is to the right or colinear, place below second node
-							nx = x
-							ny = y+r+2*f
+						# block two quadrants, one for the previous and one for the next
+						freeQuads = self.findFreeQuadrants((x,y), self.getXY(vertices[idx-1]), self.getXY(vertices[idx+1]))
 					else:
-						# special case for end nodes, always place below node
-						nx = x
+						# special case for end nodes, only block one quadrant
+						freeQuads = self.findFreeQuadrants((x,y), self.getXY(vertices[idx-1]))
+
+					# randomly place number in one of the free quadrants
+					q = choice(freeQuads)
+					if q == self.TOP_RIGHT:
+						nx = x+2*r
+						ny = y+2*r+f
+					elif q == self.TOP_LEFT:
+						nx = x-2*r
 						ny = y+r+f
+					elif q == self.BOTTOM_LEFT:
+						nx = x-r
+						ny = y-r
+					else:
+						nx = x+r
+						ny = y-r
 
 					number = inkex.etree.Element(inkex.addNS('text', 'svg'))
 					number.text = str(idx+1)
@@ -117,7 +118,6 @@ class PaintByNumber(inkex.Effect):
 					number.set('y', str(ny))
 					number.set('font-size', self.options.fontsize)
 					number.set('text-anchor', 'middle')
-
 					numberLayer.append(number)
 
 
@@ -129,7 +129,35 @@ class PaintByNumber(inkex.Effect):
 	def getXY(self, vertex):
 		c, l = vertex
 		x,y = l[0], l[1]
-		return x,y
+		return (x,y)
+
+
+	def findFreeQuadrants(self, current, previous, next = None):
+		freeQuads = [self.TOP_LEFT, self.TOP_RIGHT, self.BOTTOM_RIGHT, self.BOTTOM_LEFT]
+		freeQuads.remove(self.findBlockedQuadrant(current, previous))
+		if next != None:
+			q = self.findBlockedQuadrant(current, next)
+			if q in freeQuads:
+				freeQuads.remove(q)
+		return freeQuads
+
+		
+	def findBlockedQuadrant(self, current, reference):
+		x1,y1 = current
+		x2,y2 = reference
+		if x2 > x1:
+			# reference is on the right side
+			if y2 > y1:
+				return self.TOP_RIGHT
+			else:
+				return self.BOTTOM_RIGHT
+		else:
+			# reference is on the right side
+			if y2 > y1:
+				return self.TOP_LEFT
+			else:
+				return self.BOTTOM_LEFT
+
 
 
 # create effect instance and apply it.
