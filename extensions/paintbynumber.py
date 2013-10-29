@@ -54,13 +54,13 @@ class PaintByNumber(inkex.Effect):
 
 		for id, path in self.selected.iteritems():
 			if path.tag == 'path' or path.tag == inkex.addNS('path','svg'):
-				d = path.get('d')
-				
-				vertices = simplepath.parsePath(d)
+				# radius and fontsize as offsets to avoid placing numbers inside dots
 				r = float(self.options.radius)
-				h = inkex.unittouu(svg.get('height'))
+				f = 0.5*int(self.options.fontsize)
 
 				# iterate over vertices and draw dots on each as well as the number next to it
+				d = path.get('d')
+				vertices = simplepath.parsePath(d)
 				for idx, v in enumerate(vertices):
 					x,y = self.getXY(v)
 
@@ -70,9 +70,7 @@ class PaintByNumber(inkex.Effect):
 						'stroke-width': '0',
 						'fill': '#000000'
 					}
-
 					name = 'pbn_%i' % idx
-
 					attributes = {
 						'style': simplestyle.formatStyle(style),
 						inkex.addNS('cx', 'sodipodi') : str(x),
@@ -85,66 +83,40 @@ class PaintByNumber(inkex.Effect):
 						inkex.addNS('type', 'sodipodi') : 'arc',
 						inkex.addNS('label','inkscape') : name
 					}
-
 					dot = inkex.etree.SubElement(dotLayer, inkex.addNS('path', 'svg'), attributes)
 
-					# draw numbers
-					token = randint(0,3)
-					if token == 0:
-						# place number left of the dot
-						nx = x-2*r
-						ny = y
-					elif token == 1:
-						# place number above dot
-						nx = x
-						ny = y+2*r
-					elif token == 2:
-						# place number to the right
-						nx = x+2*r
-						ny = y
-					else:
-						# place number below dot
-						nx = x
-						ny = y-2*r
+					# place numbers according to where the next node lies
+					if idx > 0 and idx < len(vertices)-1:
+						x1,y1 = self.getXY(vertices[idx-1])
+						x2,y2 = x,y
+						x3,y3 = self.getXY(vertices[idx+1])
+
+						# vector from first to second point
+						u1,v1 = x2-x1,y2-y1
+						u2,v2 = x3-x1,y3-y1
 						
-					## place numbers according in largest available angle of vectors - BUGGY
-					# if idx > 0 and idx < len(vertices)-1:
-						# x1,y1 = self.getXY(vertices[idx-1])
-						# x2,y2 = x,y
-						# x3,y3 = self.getXY(vertices[idx+1])
+						# check if point is to the left or to the right
+						k = (u1*v2)-(v1*u2)
 
-						# u1,v1 = x2-x1,y2-y1
-						# u2,v2 = x3-x2,y3-y2
-
-						# alpha = degrees(acos((u1*u2 + v1*v2)/(sqrt((u1**2+v1**2)*(u2**2+v2**2)))))
-						# msg = '%i %f' % (idx, alpha)
-						# inkex.errormsg(msg)
-
-						# if alpha >= 0 and alpha <= 45:
-						# 	# place number left of the dot
-						# 	nx = x-3*r
-						# 	ny = y
-						# elif alpha > 45 and alpha <= 180:
-						# 	# place number above dot
-						# 	nx = x
-						# 	ny = y+3*r
-						# elif alpha > 180 and alpha <= 315:
-						# 	# place number to the right
-						# 	nx = x+3*r
-						# 	ny = y
-						# elif alpha > 315:
-						# 	# place number below dot
-						# 	nx = x
-						# 	ny = y-3*r
-					# else:
-						# special case for the first number
-						# nx,ny = 5,5
+						if k > 0:
+							# point is to the left, place above second node
+							nx = x
+							ny = y-r-0.5*f
+						else:
+							# point is to the right or colinear, place below second node
+							nx = x
+							ny = y+r+2*f
+					else:
+						# special case for end nodes, always place below node
+						nx = x
+						ny = y+r+f
 
 					number = inkex.etree.Element(inkex.addNS('text', 'svg'))
 					number.text = str(idx+1)
 					number.set('x', str(nx))
 					number.set('y', str(ny))
 					number.set('font-size', self.options.fontsize)
+					number.set('text-anchor', 'middle')
 
 					numberLayer.append(number)
 
@@ -155,7 +127,6 @@ class PaintByNumber(inkex.Effect):
 
 	
 	def getXY(self, vertex):
-		inkex.errormsg(repr(vertex))
 		c, l = vertex
 		x,y = l[0], l[1]
 		return x,y
