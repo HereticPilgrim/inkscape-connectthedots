@@ -102,22 +102,27 @@ class PaintByNumber(inkex.Effect):
 					if q == self.TOP_RIGHT:
 						nx = x+2*r
 						ny = y+2*r+f
+						textAnchor = 'start'
 					elif q == self.TOP_LEFT:
 						nx = x-2*r
 						ny = y+r+f
+						textAnchor = 'end'
 					elif q == self.BOTTOM_LEFT:
 						nx = x-r
 						ny = y-r
-					else:
+						textAnchor = 'end'
+					else: # BOTTOM_RIGHT
 						nx = x+r
 						ny = y-r
+						textAnchor = 'start'
 
 					number = inkex.etree.Element(inkex.addNS('text', 'svg'))
 					number.text = str(idx+1)
 					number.set('x', str(nx))
 					number.set('y', str(ny))
 					number.set('font-size', self.options.fontsize)
-					number.set('text-anchor', 'middle')
+					# number.set('text-anchor', 'middle')
+					number.set('text-anchor', textAnchor)
 					numberLayer.append(number)
 
 
