@@ -116,15 +116,14 @@ class PaintByNumber(inkex.Effect):
 						ny = y-r
 						textAnchor = 'start'
 
+					# create the number element
 					number = inkex.etree.Element(inkex.addNS('text', 'svg'))
 					number.text = str(idx+1)
 					number.set('x', str(nx))
 					number.set('y', str(ny))
 					number.set('font-size', self.options.fontsize)
-					# number.set('text-anchor', 'middle')
 					number.set('text-anchor', textAnchor)
 					numberLayer.append(number)
-
 
 				# hide the original path if specified in options
 				if self.options.hidepath == 'true':
@@ -132,12 +131,25 @@ class PaintByNumber(inkex.Effect):
 
 	
 	def getXY(self, vertex):
-		c, l = vertex
-		x,y = l[0], l[1]
+		# split vertex info into command and list of parameters
+		cmd, params = vertex
+		if cmd == 'M' or cmd == 'L':
+			'''Not necessary to check for 'm' and/or 'l',
+			because pathparser returns only absolute coordinates'''
+			x,y = params[0], params[1]
+		else:
+			'''We are looking at a curved path, or cubic Bezier curve. The last
+			coordinate pair in the parameters list determine the point's position,
+			see: http://www.w3.org/TR/SVG/paths.html#PathDataCubicBezierCommands'''
+			x,y = params[-2:]
 		return (x,y)
 
 
 	def findFreeQuadrants(self, current, previous, next = None):
+		'''Determines which quadrants around the current vertex are still available
+		for number placement. Returns a list of at least two free quadrants. If next
+		is None, the current vertex is treated as a start/end vertex and only one
+		vertex is considered for blocking quadrants.'''
 		freeQuads = [self.TOP_LEFT, self.TOP_RIGHT, self.BOTTOM_RIGHT, self.BOTTOM_LEFT]
 		freeQuads.remove(self.findBlockedQuadrant(current, previous))
 		if next != None:
@@ -148,6 +160,10 @@ class PaintByNumber(inkex.Effect):
 
 		
 	def findBlockedQuadrant(self, current, reference):
+		'''Determines which quadrant of the current point is blocked for number
+		placement by the reference point. E.g. if the reference point is in the
+		top right relative to the current point, the TOP_RIGHT quadrant will
+		not be allowed for number placement.'''
 		x1,y1 = current
 		x2,y2 = reference
 		if x2 > x1:
