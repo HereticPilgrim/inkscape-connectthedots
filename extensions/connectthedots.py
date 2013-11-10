@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 '''
-Paint by Number extension for Inkscape Vector Graphics Editor
+Connect the Dots extension for Inkscape Vector Graphics Editor
 Copyright (C) 2013  Manuel Grauwiler (HereticPilgrim)
 
 This program is free software: you can redistribute it and/or modify
@@ -26,7 +26,7 @@ import simplestyle
 import gettext
 _ = gettext.gettext
 
-class PaintByNumber(inkex.Effect):
+class ConnectTheDots(inkex.Effect):
 	TOP_RIGHT = 1
 	TOP_LEFT = 2
 	BOTTOM_LEFT = 3
@@ -49,11 +49,11 @@ class PaintByNumber(inkex.Effect):
 
 		# create new layers for dots and for numbers
 		dotLayer = inkex.etree.SubElement(svg, 'g')
-		dotLayer.set(inkex.addNS('label', 'inkscape'), 'PaintByNumber dotLayer')
+		dotLayer.set(inkex.addNS('label', 'inkscape'), 'ConnectTheDots dotLayer')
 		dotLayer.set(inkex.addNS('groupmode', 'inkscape'), 'layer')
 
 		numberLayer = inkex.etree.SubElement(svg, 'g')
-		numberLayer.set(inkex.addNS('label', 'inkscape'), 'PaintByNumber numberLayer')
+		numberLayer.set(inkex.addNS('label', 'inkscape'), 'ConnectTheDots numberLayer')
 		numberLayer.set(inkex.addNS('groupmode', 'inkscape'), 'layer')
 
 		# iterate over every path, start numbering from 1 every time
@@ -183,5 +183,5 @@ class PaintByNumber(inkex.Effect):
 
 # create effect instance and apply it.
 if __name__ == '__main__':
-    e = PaintByNumber()
+    e = ConnectTheDots()
     e.affect()
